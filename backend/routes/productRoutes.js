@@ -13,7 +13,7 @@ router.get('/', async (req, res) => {
 })
 
 // POST a new product
-router.post('/', async (req, res) => {
+router.post('/add', async (req, res) => {
   const { name, price, description } = req.body
 
   const newProduct = new Product({
@@ -25,6 +25,26 @@ router.post('/', async (req, res) => {
   try {
     const savedProduct = await newProduct.save()
     res.status(201).json(savedProduct)
+  } catch (err) {
+    res.status(400).json({ message: err.message })
+  }
+})
+
+router.put('/update/:id', async (req, res) => {
+  const { name, price, description } = req.body
+
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      { name, price, description },
+      { new: true }
+    )
+
+    if (!updatedProduct) {
+      return res.status(404).json({ message: 'Product not found' })
+    }
+
+    res.json(updatedProduct)
   } catch (err) {
     res.status(400).json({ message: err.message })
   }
