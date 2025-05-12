@@ -38,3 +38,6 @@ RecycKart is a MERN stack web app that promotes eco-sustainability. Users can:
 - Mobile responsiveness
 - Deployment of frontend & backend
 - Create documentation & demo video
+
+## Backend deployment link:
+https://s74-guruprasadh-capstone-recyckart.onrender.com
