@@ -43,4 +43,4 @@ RecycKart is a MERN stack web app that promotes eco-sustainability. Users can:
 https://s74-guruprasadh-capstone-recyckart.onrender.com
 
 ## Frontend deployemnt link:
-https://roaring-nougat-3a4b71.netlify.app/
+https://recyckart.netlify.app/
