@@ -10,6 +10,7 @@ const contributionRoutes = require('./routes/contributionRoutes')
 const Stripe = require('stripe')
 const connectDB = require('./config/db')
 const { notFound, errorHandler } = require('./middleware/errorMiddleware')
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -40,7 +41,7 @@ const app = express()
 
 app.use(express.json())
 app.use(cors({
-  origin: 'http://localhost:5173', // Your frontend URL
+  origin: process.env.FRONTEND_URL, // Your frontend URL
   credentials: true
 }))
 
@@ -85,8 +86,8 @@ app.post('/api/create-checkout-session', async (req, res) => {
       mode: 'payment',
       payment_method_types: ['card'],
       line_items,
-      success_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/order-confirmation?paid=true`,
-      cancel_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/cart`
+      success_url: `${frontendUrl}/order-confirmation?paid=true`,
+      cancel_url: `${frontendUrl}/cart`
     })
 
     res.json({ id: session.id, url: session.url })

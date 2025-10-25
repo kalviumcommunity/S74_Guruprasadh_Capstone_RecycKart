@@ -2,12 +2,20 @@ import React, { useState, useEffect } from "react";
 import { ShoppingBag, Leaf, Recycle, ArrowRight, Package, TrendingUp, Users, Loader2 } from "lucide-react";
 import api from "../utils/api";
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, onAddToCart }) => {
   // Construct the full image URL
   const getImageUrl = (imagePath) => {
     if (!imagePath) return 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&q=80&fit=crop&w=400';
     if (imagePath.startsWith('http')) return imagePath;
-    return `http://localhost:5000${imagePath}`; // Adjust the port if your backend runs on a different port
+    // Use the same base URL as the API but remove '/api' from the end if present
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    const cleanBaseUrl = baseUrl.endsWith('/api') ? baseUrl.slice(0, -4) : baseUrl;
+    return `${cleanBaseUrl}${imagePath}`;
+  };
+
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    onAddToCart(product);
   };
 
   return (
@@ -16,7 +24,7 @@ const ProductCard = ({ product }) => {
         <img 
           src={getImageUrl(product.image)} 
           alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 cursor-pointer"
           onError={(e) => {
             e.target.onerror = null; // Prevent infinite loop
             e.target.src = 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&q=80&fit=crop&w=400';
@@ -29,10 +37,13 @@ const ProductCard = ({ product }) => {
     <div className="p-5">
       <h3 className="font-semibold text-gray-900 text-lg mb-2">{product.name}</h3>
       <div className="flex items-center justify-between">
-        <span className="text-2xl font-bold text-emerald-600">₹{product.price}</span>
-        <button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2">
-          Add <ShoppingBag size={16} />
-        </button>
+          <span className="text-2xl font-bold text-emerald-600">₹{product.price}</span>
+          <button 
+            onClick={handleAddToCart}
+            className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+          >
+            Add <ShoppingBag size={16} />
+          </button>
       </div>
       </div>
     </div>
@@ -47,13 +58,28 @@ const Home = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await api.get('/products');
+        // Create a new axios instance without credentials for public endpoints
+        const publicApi = axios.create({
+          baseURL: 'http://localhost:5000/api',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          withCredentials: false // Don't send credentials for public endpoints
+        });
+        
+        const response = await publicApi.get('/products');
+        console.log('Products loaded:', response.data);
         setProducts(response.data);
         setError(null);
       } catch (err) {
         console.error('Error fetching products:', err);
+        console.error('Error details:', {
+          message: err.message,
+          response: err.response?.data,
+          status: err.response?.status
+        });
         setError('Failed to load products. Please make sure the backend server is running and try again.');
-        setProducts([]); // Clear any previous products
+        setProducts([]);
       } finally {
         setLoading(false);
       }
@@ -85,6 +111,19 @@ const Home = () => {
       description: "Purchase recycled goods and be part of the circular economy movement."
     }
   ];
+
+  const handleAddToCart = (product) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      // Redirect to login page or show login modal
+      window.location.href = '/login';
+      return;
+    }
+    
+    // TODO: Add to cart logic here
+    console.log('Adding to cart:', product);
+    // You can implement the actual add to cart functionality here
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white">
@@ -220,12 +259,16 @@ const Home = () => {
           ) : products.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
               {products.map((product) => (
-                <ProductCard key={product._id} product={{
-                  ...product,
-                  id: product._id,
-                  // Use a default image if none is provided
-                  image: product.image || 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&q=80&fit=crop&w=400'
-                }} />
+                <ProductCard 
+                  key={product._id} 
+                  product={{
+                    ...product,
+                    id: product._id,
+                    // Use a default image if none is provided
+                    image: product.image || 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&q=80&fit=crop&w=400'
+                  }}
+                  onAddToCart={handleAddToCart}
+                />
               ))}
             </div>
           ) : (
