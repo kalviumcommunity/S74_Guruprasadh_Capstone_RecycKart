@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import Login from './pages/Login'
+import Register from './pages/Register'
 import AddProduct from './pages/AddProduct'
 import Contribution from './pages/Contribution'
 import Products from './pages/Products'
@@ -10,6 +11,7 @@ import Cart from './pages/Cart'
 import OrderConfirmation from './pages/OrderConfirmation'
 import Partner from './pages/Partner'
 import ProtectedRoute from './components/ProtectedRoute'
+import React from 'react'
 
 export default function App() {
   return (
@@ -18,7 +20,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/products" element={<Products />} />
         <Route path="/products/:id" element={<ProductDetails />} />
         <Route path="/cart" element={<Cart />} />
@@ -34,3 +36,4 @@ export default function App() {
     </>
   )
 }
+  

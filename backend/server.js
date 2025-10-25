@@ -1,16 +1,56 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const dotenv = require('dotenv')
-const cors = require('cors') // ✅ Add this line
+const cors = require('cors')
+const path = require('path')
+const multer = require('multer')
 const userRoutes = require('./routes/userRoutes')
 const productRoutes = require('./routes/productRoutes')
 const contributionRoutes = require('./routes/contributionRoutes')
+const Stripe = require('stripe')
+const connectDB = require('./config/db')
+const { notFound, errorHandler } = require('./middleware/errorMiddleware')
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/')
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname)
+  }
+})
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true)
+    } else {
+      cb(new Error('Only image files are allowed!'), false)
+    }
+  }
+})
 
 dotenv.config()
+connectDB()
+
 const app = express()
 
-app.use(cors()) // ✅ Enable CORS for all origins
 app.use(express.json())
+app.use(cors({
+  origin: 'http://localhost:5173', // Your frontend URL
+  credentials: true
+}))
+
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`)
+  next()
+})
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
@@ -19,6 +59,42 @@ mongoose.connect(process.env.MONGO_URI)
 app.use('/api/users', userRoutes)
 app.use('/api/products', productRoutes)
 app.use('/api/contributions', contributionRoutes)
+
+// Payments - Stripe Checkout
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY || '')
+app.post('/api/create-checkout-session', async (req, res) => {
+  try {
+    const { items } = req.body || {}
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'No items to checkout' })
+    }
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.status(500).json({ error: 'Stripe not configured' })
+    }
+
+    const line_items = items.map(p => ({
+      price_data: {
+        currency: 'inr',
+        product_data: { name: p.name },
+        unit_amount: Math.round(Number(p.price) * 100)
+      },
+      quantity: 1
+    }))
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      line_items,
+      success_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/order-confirmation?paid=true`,
+      cancel_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/cart`
+    })
+
+    res.json({ id: session.id, url: session.url })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Failed to create checkout session' })
+  }
+})
 
 app.listen(process.env.PORT, () => {
   console.log(`Server running on http://localhost:${process.env.PORT}`)
