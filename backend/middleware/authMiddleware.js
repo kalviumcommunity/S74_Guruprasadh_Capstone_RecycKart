@@ -10,11 +10,19 @@ const protect = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    
+    // Get user from database to include name and email
+    const user = await User.findById(decoded.id).select('-password')
+    
+    if (!user) {
+      return res.status(401).json({ message: 'User not found' })
+    }
 
-    // Directly use role and id from token to avoid extra DB call
     req.user = {
-      id: decoded.id,
-      role: decoded.role
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role
     }
 
     next()
