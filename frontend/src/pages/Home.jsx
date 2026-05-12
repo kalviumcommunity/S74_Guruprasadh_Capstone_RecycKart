@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { ShoppingBag, Leaf, Recycle, ArrowRight, Package, TrendingUp, Users, Loader2 } from "lucide-react";
 import api from "../utils/api";
+import { IMAGE_FALLBACK } from "../constants/imageFallback";
 
 const ProductCard = ({ product, onAddToCart }) => {
-  // Construct the full image URL
+  // Same image URL logic as src/components/ProductCard.jsx (Products page)
   const getImageUrl = (imagePath) => {
-    if (!imagePath) return 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&q=80&fit=crop&w=400';
+    if (!imagePath) return IMAGE_FALLBACK;
     if (imagePath.startsWith('http')) return imagePath;
-    // Use the same base URL as the API but remove '/api' from the end if present
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    const cleanBaseUrl = baseUrl.endsWith('/api') ? baseUrl.slice(0, -4) : baseUrl;
-    return `${cleanBaseUrl}${imagePath}`;
+    return `http://localhost:5000${imagePath}`;
   };
 
   const handleAddToCart = (e) => {
@@ -26,8 +24,8 @@ const ProductCard = ({ product, onAddToCart }) => {
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 cursor-pointer"
           onError={(e) => {
-            e.target.onerror = null; // Prevent infinite loop
-            e.target.src = 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&q=80&fit=crop&w=400';
+            e.target.onerror = null;
+            e.target.src = IMAGE_FALLBACK;
           }}
         />
         <div className="absolute top-4 right-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
@@ -58,16 +56,7 @@ const Home = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // Create a new axios instance without credentials for public endpoints
-        const publicApi = axios.create({
-          baseURL: 'http://localhost:5000/api',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          withCredentials: false // Don't send credentials for public endpoints
-        });
-        
-        const response = await publicApi.get('/products');
+        const response = await api.get('/products');
         console.log('Products loaded:', response.data);
         setProducts(response.data);
         setError(null);
@@ -264,8 +253,6 @@ const Home = () => {
                   product={{
                     ...product,
                     id: product._id,
-                    // Use a default image if none is provided
-                    image: product.image || 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&q=80&fit=crop&w=400'
                   }}
                   onAddToCart={handleAddToCart}
                 />
