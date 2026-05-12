@@ -1,9 +1,9 @@
+require('dotenv').config()
+
 const express = require('express')
 const mongoose = require('mongoose')
-const dotenv = require('dotenv')
 const cors = require('cors')
 const path = require('path')
-const multer = require('multer')
 const userRoutes = require('./routes/userRoutes')
 const productRoutes = require('./routes/productRoutes')
 const contributionRoutes = require('./routes/contributionRoutes')
@@ -12,29 +12,6 @@ const connectDB = require('./config/db')
 const { notFound, errorHandler } = require('./middleware/errorMiddleware')
 const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/')
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname)
-  }
-})
-
-const upload = multer({ 
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true)
-    } else {
-      cb(new Error('Only image files are allowed!'), false)
-    }
-  }
-})
-
-dotenv.config()
 connectDB()
 
 const app = express()

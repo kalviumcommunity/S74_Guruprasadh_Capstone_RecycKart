@@ -2,7 +2,7 @@ import { useCart } from '../context/CartContext'
 import { useNavigate } from 'react-router-dom'
 import React, { useState } from 'react'
 import api from '../utils/api'
-import { IMAGE_FALLBACK } from '../constants/imageFallback'
+import { getProductImageUrl } from '../utils/productImageUrl'
 import { FaTrash, FaShoppingBag, FaLock, FaArrowLeft, FaTags } from 'react-icons/fa'
 
 export default function Cart() {
@@ -84,12 +84,12 @@ export default function Cart() {
                       <div className="flex-shrink-0">
                         <div className="w-32 h-32 bg-gray-100 rounded-xl overflow-hidden">
                           <img 
-                            src={item.image ? `http://localhost:5000${item.image}` : IMAGE_FALLBACK}
+                            src={getProductImageUrl(item.image)}
                             alt={item.name}
                             className="w-full h-full object-contain p-2"
                             onError={(e) => {
                               e.target.onerror = null
-                              e.target.src = IMAGE_FALLBACK
+                              e.target.src = getProductImageUrl('')
                             }}
                           />
                         </div>

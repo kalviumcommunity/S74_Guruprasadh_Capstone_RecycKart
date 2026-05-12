@@ -1,15 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { ShoppingBag, Leaf, Recycle, ArrowRight, Package, TrendingUp, Users, Loader2 } from "lucide-react";
 import api from "../utils/api";
-import { IMAGE_FALLBACK } from "../constants/imageFallback";
+import { getProductImageUrl } from "../utils/productImageUrl";
 
 const ProductCard = ({ product, onAddToCart }) => {
-  // Same image URL logic as src/components/ProductCard.jsx (Products page)
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) return IMAGE_FALLBACK;
-    if (imagePath.startsWith('http')) return imagePath;
-    return `http://localhost:5000${imagePath}`;
-  };
 
   const handleAddToCart = (e) => {
     e.preventDefault();
@@ -20,12 +14,12 @@ const ProductCard = ({ product, onAddToCart }) => {
     <div className="group relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100">
       <div className="relative overflow-hidden aspect-square">
         <img 
-          src={getImageUrl(product.image)} 
+          src={getProductImageUrl(product.image)} 
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 cursor-pointer"
           onError={(e) => {
             e.target.onerror = null;
-            e.target.src = IMAGE_FALLBACK;
+            e.target.src = getProductImageUrl('');
           }}
         />
         <div className="absolute top-4 right-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
