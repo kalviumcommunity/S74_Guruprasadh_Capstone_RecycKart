@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import api from '../utils/api'
-import { IMAGE_FALLBACK } from '../constants/imageFallback'
+import { getProductImageUrl } from '../utils/productImageUrl'
 import React from 'react'
 import { useCart } from '../context/CartContext'
 import { FaMinus, FaPlus, FaShoppingCart, FaHeart, FaShare, FaTruck, FaUndo, FaShieldAlt, FaStar } from 'react-icons/fa'
@@ -53,12 +53,12 @@ export default function ProductDetails() {
               <div className="bg-white rounded-xl shadow-lg p-8 mb-6 group relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <img 
-                  src={prod.image ? `http://localhost:5000${prod.image}` : IMAGE_FALLBACK} 
+                  src={getProductImageUrl(prod.image)} 
                   alt={prod.name} 
                   className="w-full h-96 object-contain transform group-hover:scale-105 transition-transform duration-300"
                   onError={(e) => {
                     e.target.onerror = null
-                    e.target.src = IMAGE_FALLBACK
+                    e.target.src = getProductImageUrl('')
                   }}
                 />
               </div>
@@ -76,12 +76,12 @@ export default function ProductDetails() {
                     }`}
                   >
                     <img 
-                      src={thumb ? `http://localhost:5000${thumb}` : IMAGE_FALLBACK}
+                      src={getProductImageUrl(thumb)}
                       alt={`${prod.name} view ${idx + 1}`}
                       className="w-full h-20 object-contain p-2 bg-white"
                       onError={(e) => {
                         e.target.onerror = null
-                        e.target.src = IMAGE_FALLBACK
+                        e.target.src = getProductImageUrl('')
                       }}
                     />
                   </button>
