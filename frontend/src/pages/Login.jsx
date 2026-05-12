@@ -27,7 +27,7 @@ const Login = () => {
     setError('')
 
     try {
-      const res = await api.post('/users/login', { email, password })
+      const res = await api.post("/users/login", { email, password })
       if (res.data.token) {
         setToken(res.data.token)
         navigate('/')
