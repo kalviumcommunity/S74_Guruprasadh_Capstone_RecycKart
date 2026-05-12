@@ -24,9 +24,14 @@ const addProduct = async (req, res) => {
       imagePath = `/uploads/${req.file.filename}`
     }
 
+    const priceNum = Number(price)
+    if (Number.isNaN(priceNum) || priceNum < 0) {
+      return res.status(400).json({ message: 'Invalid price' })
+    }
+
     const newProduct = new Product({
       name,
-      price,
+      price: priceNum,
       description,
       image: imagePath
     })

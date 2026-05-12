@@ -3,6 +3,7 @@
 import React from "react";
 import { Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
+import { IMAGE_FALLBACK } from '../constants/imageFallback'
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart()
@@ -11,12 +12,12 @@ const ProductCard = ({ product }) => {
     <div className="bg-white border rounded-xl shadow-sm hover:shadow-md transition flex flex-col hover:-translate-y-0.5 duration-200 h-full">
       <div className="relative">
         <img 
-          src={`http://localhost:5000${product.image}`} 
+          src={product.image ? `http://localhost:5000${product.image}` : IMAGE_FALLBACK} 
           alt={product.name}
           className="w-full h-48 object-cover rounded-t-xl"
           onError={(e) => {
             e.target.onerror = null;
-            e.target.src = 'https://via.placeholder.com/300x200?text=Image+Not+Available';
+            e.target.src = IMAGE_FALLBACK;
           }}
         />
         <div className="absolute top-2 right-2 text-[12px] bg-white/90 border rounded px-2 py-0.5 font-semibold">₹{product.price}</div>

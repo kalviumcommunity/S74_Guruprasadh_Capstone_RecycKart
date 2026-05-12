@@ -5,10 +5,24 @@ const notFound = (req, res, next) => {
 };
 
 const errorHandler = (err, req, res, next) => {
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  let message = err.message;
+
+  if (err.name === 'MulterError') {
+    statusCode = 400;
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      message = 'Image must be under 5MB';
+    }
+  } else if (
+    message === 'Only image files are allowed' ||
+    (message && message.includes('Only image files'))
+  ) {
+    statusCode = 400;
+  }
+
   res.status(statusCode);
   res.json({
-    message: err.message,
+    message,
     stack: process.env.NODE_ENV === 'production' ? null : err.stack,
   });
 };

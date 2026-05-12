@@ -119,6 +119,9 @@ app.post('/api/create-checkout-session', async (req, res) => {
   }
 })
 
+app.use(notFound)
+app.use(errorHandler)
+
 app.listen(process.env.PORT, () => {
   console.log(`Server running on http://localhost:${process.env.PORT}`)
 })
